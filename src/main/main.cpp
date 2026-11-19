@@ -22,6 +22,8 @@
 #include "file_bridge.h"
 #include "app_restart.h"
 #include "crash_handler.h"
+#include "virtual_pad.h"
+#include "recompinput/input_state.h"
 #else
 #define SDL_MAIN_HANDLED
 #endif
@@ -1024,6 +1026,20 @@ int main(int argc, char** argv) {
         .set_rumble = recompinput::set_rumble,
         .get_connected_device_info = get_connected_device_info,
     };
+
+#ifdef __ANDROID__
+    // Touch buttons (TouchOverlay.java, android/native/compat/virtual_pad.cpp): the touch state is merged into
+    // controller 1's N64 input, and the Java side learns whether the game runs and whether a menu takes input.
+    input_callbacks.poll_input = []() {
+        recompinput::poll_inputs();
+        androidport::virtualpad::update_game_state(ultramodern::is_game_started(), recompinput::game_input_disabled());
+    };
+    input_callbacks.get_input = [](int controller_num, uint16_t* buttons, float* x, float* y) {
+        bool ret = recompinput::profiles::get_n64_input(controller_num, buttons, x, y);
+        androidport::virtualpad::merge_input(controller_num, buttons, x, y);
+        return ret;
+    };
+#endif
 
     ultramodern::events::callbacks_t thread_callbacks{
         .vi_callback = recompinput::update_rumble,

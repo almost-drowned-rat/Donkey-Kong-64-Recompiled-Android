@@ -376,6 +376,8 @@ set(MAIN_SOURCES
     # Visibilidade de morte nativa (SIGSEGV/SIGABRT/terminate -> logcat na tag
     # DK64Recomp-Crash antes do tombstone padrão do Android).
     "${ANDROID_PORT_DIR}/native/compat/crash_handler.cpp"
+    # Touch buttons (TouchOverlay.java + JNI bridge + merge into the N64 input)
+    "${ANDROID_PORT_DIR}/native/compat/virtual_pad.cpp"
     # Options-Menü per Start + Select halten (Handheld-Fork)
 )
 target_sources(main PRIVATE ${MAIN_SOURCES} "${ICON_GEN_DIR}/icon_bytes.c")

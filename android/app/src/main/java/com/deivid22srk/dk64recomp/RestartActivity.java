@@ -7,8 +7,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import java.io.File;
-
 /**
  * Neustart des Spiels in einem frischen Prozess (Handheld-Fork).
  *
@@ -42,8 +40,19 @@ public class RestartActivity extends Activity {
         handler.post(this::waitAndRelaunch);
     }
 
+    /** Whether the old game process still runs. /proc/<pid> of another process is not visible to an app on
+     *  Android 10+ (the check was always "gone" and the app reopened inside the dying process), so ask the
+     *  ActivityManager, which lists the app's own processes. */
+    private boolean processAlive(int pid) {
+        android.app.ActivityManager am = (android.app.ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        java.util.List<android.app.ActivityManager.RunningAppProcessInfo> ps = am != null ? am.getRunningAppProcesses() : null;
+        if (ps == null) return false;
+        for (android.app.ActivityManager.RunningAppProcessInfo p : ps) if (p.pid == pid) return true;
+        return false;
+    }
+
     private void waitAndRelaunch() {
-        boolean oldAlive = oldPid > 0 && new File("/proc/" + oldPid).exists();
+        boolean oldAlive = oldPid > 0 && processAlive(oldPid);
         if (oldAlive && System.currentTimeMillis() < deadline) {
             handler.postDelayed(this::waitAndRelaunch, POLL_MS);
             return;

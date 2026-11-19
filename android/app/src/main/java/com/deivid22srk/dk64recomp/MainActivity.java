@@ -47,6 +47,27 @@ public class MainActivity extends SDLActivity {
 
     private static final String TAG = "DK64Recomp";
 
+    /** The touch buttons, their icon and menu (TouchControls.java). */
+    private TouchControls touch;
+
+    @Override
+    public boolean dispatchKeyEvent(android.view.KeyEvent e) {
+        if (touch != null && touch.onKey(e)) return true;
+        return super.dispatchKeyEvent(e);
+    }
+
+    @Override
+    public boolean dispatchGenericMotionEvent(android.view.MotionEvent e) {
+        if (touch != null && touch.onMotion(e)) return true;
+        return super.dispatchGenericMotionEvent(e);
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(android.view.MotionEvent e) {
+        if (touch != null && touch.onTouch(e)) return true;
+        return super.dispatchTouchEvent(e);
+    }
+
     // ------------------------------------------------------------------
     // ORIENTAÇÃO — o jogo é LANDSCAPE-ONLY.
     //
@@ -148,6 +169,15 @@ public class MainActivity extends SDLActivity {
             nativeRestartInit();
         } catch (UnsatisfiedLinkError e) {
             Log.e(TAG, "JNI de reinício do app indisponível: " + e.getMessage());
+        }
+
+        // Touch buttons over SDL's surface (TouchControls.java; can be switched on / off in the touch menu
+        // behind the icon at the top centre). Touches off the buttons still reach SDL (touch as a mouse).
+        if (mLayout != null && touch == null) {
+            touch = new TouchControls(this, mLayout, TouchNative::nativeTouchPad, new TouchControls.GameState() {
+                @Override public boolean running() { return TouchNative.nativeGameRunning(); }
+                @Override public boolean menuOpen() { return TouchNative.nativeMenuOpen(); }
+            });
         }
 
         // SurfaceHolder.Callback para o ciclo de vida da Surface nativa.
@@ -482,6 +512,7 @@ public class MainActivity extends SDLActivity {
         } catch (UnsatisfiedLinkError e) {
             Log.e(TAG, "nativeSetAppActive(false) indisponível: " + e.getMessage());
         }
+        if (touch != null) touch.onPause();
         super.onPause();
     }
 
@@ -489,6 +520,7 @@ public class MainActivity extends SDLActivity {
     public void onResume() {
         super.onResume();
         fillScreen();
+        if (touch != null) touch.onResume();
         // Handheld-Fork: Pause OHNE Verlust der Surface (durchsichtiges
         // Overlay, Dialog-Activity, onNewIntent) — dann kommt kein
         // surfaceCreated, und das in onPause geschlossene Gate bliebe für
@@ -555,6 +587,7 @@ public class MainActivity extends SDLActivity {
     @Override
     public void onDestroy() {
         Log.i(TAG, "MainActivity.onDestroy (isFinishing=" + isFinishing() + ")");
+        if (touch != null) touch.destroy();
         // Finaliza a sessão de diagnóstico ANTES do killProcess: escreve o
         // bloco de RESUMO (erros/avisos agrupados) e fecha o arquivo. Depois
         // disto nada mais é capturado — o processo morre logo abaixo.

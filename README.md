@@ -1,43 +1,49 @@
-# DK64 Handheld — Donkey Kong 64: Recompiled for Android handhelds
+# Donkey Kong 64: Recompiled — Android
 
-Fork of [deivid22srk/dk64-recomp-android](https://github.com/deivid22srk/dk64-recomp-android)
-(the Android port of [Donkey Kong 64: Recompiled](https://github.com/Rainchus/Donkey-Kong-64-Recompiled))
-for Android handhelds with a built-in controller. Tested on the **AYN Odin 2 Portal**
+Android version of [Donkey Kong 64: Recompiled](https://github.com/Rainchus/Donkey-Kong-64-Recompiled), kept as a
+direct fork of it so upstream changes merge straight in. It started from
+[deivid22srk/dk64-recomp-android](https://github.com/deivid22srk/dk64-recomp-android), the original Android port.
+Made for Android handhelds with a built-in controller and phones alike. Tested on the **AYN Odin 2 Portal**
 (1920×1080, Android 13).
 
-What this fork changes (details in [CHANGELOG.md](CHANGELOG.md)):
+What this version adds (details in [CHANGELOG.md](CHANGELOG.md)):
 
-- Updated to upstream Donkey Kong 64: Recompiled `3b0c36d` (game version 1.0.3)
-- Own app ID `com.deivid22srk.dk64recomp.handheld` ("DK64 Handheld") — installs next to the original app
-- No touch overlay — play with the built-in controller; touch still works as a mouse in the menus
+- Upstream Donkey Kong 64: Recompiled (game version 1.0.3) — branch `main` follows upstream, `android` is this port
+- App ID `io.github.almostdrownedrat.dk64` ("DK64 Recompiled") — installs next to other DK64 apps
+- **Touch buttons** (N64 layout: stick, A, B, Z, L, R, START, C buttons; D-pad hidden by default). The
+  **controller icon** at the top centre opens their settings: **Touch buttons Automatic / Always / Off**
+  (Automatic hides them while a controller is used and a touch brings them back — on a handheld you normally
+  never see them), move and resize, button size, show / hide single buttons, opacity, stick sensitivity, reset.
+  Touches off the buttons still work as a mouse in the menus
 - Options menu on Android's **Back** (swipe from the edge to show the system bar and tap back, or the back
-  gesture), in game; Back closes it again. Start and Select do nothing for the menu
+  gesture), in game; Back closes it again
 - Real full screen, no black strip from the navigation bar
 - Fixed audio crackling and pitch jumps
 - Fixed a frozen picture after overlays and the missing restart after loading a ROM
 
 ### AI assistance
 
-The changes in this fork were made with AI assistance ([Claude Code](https://claude.com/claude-code)). Planning,
-testing on the device and the decision what gets released are by the repository owner. Tested only on the
-**AYN Odin 2 Portal** — use at your own risk. This applies only to the fork's own changes, not to the code of the
+The changes in this Android version were made with AI assistance ([Claude Code](https://claude.com/claude-code)). Planning,
+testing on the device and the decision what gets released are by the repository owner. Tested on the
+**AYN Odin 2 Portal** — use at your own risk. This applies only to this version's own changes, not to the code of the
 original projects.
 
 > ⚠️ **No game assets.** The APK on the [Releases](../../releases) page contains only this project's code (like the
 > upstream and original port releases): you need your own legally obtained ROM of **Donkey Kong 64 (USA, NTSC-U 1.0)**,
 > sha1 `cf806ff2603640a748fca5026ded28802f1f4a50`, which the app asks for on the first start ("Load ROM").
-> To build the APK yourself see [Building](#building) below.
+> Building it yourself needs that ROM too (the recompiler reads it): the steps are in
+> [.github/workflows/build.yml](.github/workflows/build.yml).
 
-Branch `handheld` is the fork's branch; `main` stays at the original port. For installing, the GPU driver
+Branch `android` is this port; `main` mirrors upstream. For installing, the GPU driver
 menu (Turnip) and technical notes see the [original port's README](https://github.com/deivid22srk/dk64-recomp-android#readme); the Turnip
 integration is described in [docs/DRIVER-VULKAN.md](docs/DRIVER-VULKAN.md), the build architecture in
 [DESIGN.md](DESIGN.md).
 
 ## Credits and license
 
-This fork:
+This Android version:
 - [deivid22srk/dk64-recomp-android](https://github.com/deivid22srk/dk64-recomp-android) — the Android port
-  this fork is based on (NDK build, SDLActivity integration, SAF file bridge, libadrenotools/Turnip support,
+  this version is based on (NDK build, SDLActivity integration, SAF file bridge, libadrenotools/Turnip support,
   lifecycle handling)
 - [thorskin6657-sudo/dk64-recomp-android](https://github.com/thorskin6657-sudo/dk64-recomp-android) — reference
   for the separate app identity

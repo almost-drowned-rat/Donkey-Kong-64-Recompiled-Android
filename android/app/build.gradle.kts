@@ -12,11 +12,11 @@ android {
     ndkVersion = "27.2.12479018"
 
     defaultConfig {
-        applicationId = "com.deivid22srk.dk64recomp.handheld"
+        applicationId = "io.github.almostdrownedrat.dk64"
         minSdk = 26
         targetSdk = 34
-        versionCode = 7
-        versionName = "0.1.1"
+        versionCode = 8
+        versionName = "0.2.0"
 
         ndk {
             // 64-bit apenas (decisão do usuário: memória e tempo de build)
