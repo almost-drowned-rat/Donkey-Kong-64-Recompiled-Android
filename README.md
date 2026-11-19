@@ -1,116 +1,192 @@
-# Donkey Kong 64: Recompiled
-Donkey Kong 64: Recompiled is a project that uses [N64: Recompiled](https://github.com/Mr-Wiseguy/N64Recomp) to **statically recompile** Donkey Kong 64 into a native port with many new features and enhancements. This project uses [RT64](https://github.com/rt64/rt64) as the rendering engine to provide some of these enhancements.
+# DK64: Recompiled — Port Android
 
-### [Check out the latest release here](https://github.com/Rainchus/Donkey-Kong-64-Recompiled/releases).
+[![build](https://github.com/deivid22srk/dk64-recomp-android/actions/workflows/build.yml/badge.svg)](https://github.com/deivid22srk/dk64-recomp-android/actions/workflows/build.yml)
 
-### **This repository and its releases do not contain game assets. The original game is required to build or run this project.**
+Port do [Donkey Kong 64: Recompiled](https://github.com/Rainchus/Donkey-Kong-64-Recompiled)
+(Rainchus) para **Android nativo** via NDK, mantendo toda a stack original:
+[N64ModernRuntime](https://github.com/Killklli/N64ModernRuntime) +
+[RT64](https://github.com/rt64/rt64) (Vulkan) + RmlUi + SDL2.
 
-<div align="left" valign="middle">
-<a href="https://runblaze.dev">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://www.runblaze.dev/logo_dark.png">
-   <img align="right" src="https://www.runblaze.dev/logo_light.png" height="102px"/>
- </picture>
-</a>
+> ⚠️ **Este repositório não contém game assets.** Você precisa da ROM original de
+> **Donkey Kong 64 (EUA, NTSC-U 1.0)** — sha1 `cf806ff2603640a748fca5026ded28802f1f4a50`.
+> Este projeto é um port de código aberto; nenhuma ROM é distribuída aqui.
 
-<br style="display: none;"/>
+## APK pronto
 
-_Thank you [Blaze](https://runblaze.dev) for supporting this project by providing Linux ARM64 and Apple Silicon macOS Github Action Runners!_
+Cada push gera um APK automaticamente no GitHub Actions (workflow `build.yml`):
+**Actions → build → artefato `dk64recomp-android-debug`** (`app-debug.apk`).
 
-</div>
+## Instalação no aparelho
 
-## Table of Contents
-* [System Requirements](#system-requirements)
-* [Features](#features)
-  * [Plug and Play](#plug-and-play)
-  * [Fully Intact N64 Effects](#fully-intact-n64-effects)
-  * [Easy-to-Use Menus](#easy-to-use-menus)
-  * [High Framerate Support](#high-framerate-support)
-  * [Low Input Lag](#low-input-lag)
-  * [Instant Load Times](#instant-load-times)
-  * [Linux and Steam Deck Support](#linux-and-steam-deck-support)
-* [Planned Features](#planned-features)
-* [FAQ](#faq)
-* [Known Issues](#known-issues)
-* [Building](#building)
-* [Libraries Used and Projects Referenced](#libraries-used-and-projects-referenced)
+1. Instale o `app-debug.apk` (habilite "Instalar apps desconhecidos").
+2. Abra o app — ele vai direto para o **menu do jogo** (a tela Java de setup foi
+   desativada). Na primeira execução os assets da UI são extraídos sozinhos.
+3. Se ainda não houver ROM, a primeira opção do menu é **“Load ROM”**: toque,
+   escolha o arquivo (`.z64`, `.n64` ou `.v64` — a conversão de byteswap é
+   automática) no seletor de arquivos do Android e aguarde a validação —
+   aparece um aviso e o **app reinicia sozinho** (~1,5 s) para finalizar a
+   instalação; na reabertura a opção já está como **“Start Game”**.
 
-## System Requirements
-A GPU supporting Direct3D 12.0 (Shader Model 6) or Vulkan 1.2 is required to run this project. The oldest GPUs that should be supported for each vendor are:
-* GeForce GT 630
-* Radeon HD 7750 (the one from 2012, not to be confused with the RX 7000 series) and newer
-* Intel HD 510 (Skylake)
+   > A ROM escolhida é copiada para o armazenamento interno do app e validada
+   > por hash (pick-once: nas próximas aberturas o menu já abre em “Start
+   > Game”). O reinício põe o início do jogo num processo limpo — o mesmo
+   > princípio do menu “GPU Driver” (o Vulkan inicializa uma vez por
+   > processo).
 
-A CPU supporting the AVX instruction set is also required (Intel Core 2000 series or AMD Bulldozer and newer).
+### Requisitos
 
-If you have issues with crashes on startup, make sure your graphics drivers are fully up to date. 
+- Android 8.0+ (arm64-v8a)
+- **GPU com Vulkan 1.1+**
+- Gamepad Bluetooth/USB recomendado para jogar; touch navega os menus como mouse
+- O mod store *online* está desativado no Android v1 (mods locais `.nrm`/`.rtz` funcionam:
+  coloque-os em `Android/data/com.deivid22srk.dk64recomp/files/mods/`)
 
-## Features
+## Gamepad virtual (touch)
 
-#### Fully Intact N64 Effects
-A lot of care was put into RT64 to make sure all graphical effects were rendered exactly as they did originally on the N64. No workarounds or "hacks" were made to replicate these effects, with the only modifications to them being made for enhancement purposes such as widescreen support.
+Para jogar **sem controle físico**, o port inclui um gamepad virtual desenhado
+sobre o jogo (`VirtualPadView`), no mesmo estilo visual do projeto
+[N64Pad2](https://github.com/deivid22srk/N64Pad2) (desenho 100% em `Canvas`,
+realce verde no toque, vibração leve, multi-touch real) com o HUD posicionado
+no estilo do **Dolphin**, em posições confortáveis para os polegares:
 
-#### Easy-to-Use Menus
-Gameplay settings, graphics settings, input mappings, and audio settings can all be configured with the in-game config menu. The menus can all be used with mouse, controller, or keyboard for maximum convenience.
+| Região | Controles |
+|---|---|
+| Topo | `L` (esq) · `Z` (centro) · `R` (dir) |
+| Esquerda | Analógico único com setas de 8 direções e zona morta |
+| Base | D-pad em cruz · `START` vermelho · botão `☰` (abre o menu do port) |
+| Direita | Losango de 4 botões **C** amarelos · `A` grande · `B` (diagonal do A, como no N64) |
+| Quina inferior direita | Mostrar/esconder o HUD (fica ativo mesmo escondido) |
 
-#### High Framerate Support
-Play at any framerate you want thanks to functionality provided by RT64! Game objects and terrain, texture scrolling, screen effects, and most HUD elements are all rendered at high framerates. By default, this project is configured to run at your monitor's refresh rate. You can also play at the original framerate of the game if you prefer. **Changing framerate has no effect on gameplay.**
+Comportamento:
 
-**Note**: External framerate limiters (such as the NVIDIA Control Panel) are known to potentially cause problems, so if you notice any stuttering then turn them off and use the manual framerate slider in the in-game graphics menu instead.
+- O HUD **só aparece quando o jogo inicia** — a launcher e os menus continuam
+  usando o touch como mouse. Toques em áreas livres do HUD também passam para
+  o jogo normalmente.
+- Botões A/B/C/START/L/R/Z/D-pad são repassados ao runtime como input N64
+  (mesma máscara de botões de um controle físico), então **todos os modos de
+  jogo, menus internos do DK64 e combinações funcionam igual**.
+- `A` aceita e `B` volta nas interfaces do port (launcher/menu de configuração);
+  o analógico e o D-pad navegam; `☰` equivale ao botão Select/Back
+  (abre e fecha o menu de configurações do port em jogo).
+- Controles semi-transparentes (estilo Dolphin) para não esconder a ação.
 
-#### Widescreen and Ultrawide Support
-Any aspect ratio is supported, with most effects modded to work correctly in widescreen. The HUD can also be positioned at 16:9 when using ultrawide aspect ratios if preferred.
+## Como compilar (resumo)
 
-**Note**: Some animation quirks can be seen at the edges of the screen in certain cutscenes when using very wide aspect ratios.
+O build tem duas fases (ambas automatizadas no CI):
 
-#### Additional Control Options
-Customize your experience by setting your stick deadzone to your liking, as well as adjusting the X and Y axis inversion for aiming.
+1. **Codegen no host** — baixa a ROM de input do release `build-inputs` de um
+   **repositório privado separado** (`dk64-recomp-build-inputs`, via secret
+   `PRIVATE_REPO_TOKEN`), descomprime com o script do [decomp do DK64](https://gitlab.com/dk64_decomp/dk64),
+   compila [N64Recomp](https://github.com/N64Recomp/N64Recomp)/`RSPRecomp` e roda
+   `us.toml`, `n_aspMain.toml` e `patches.toml`; além do `file_to_c` (host).
+2. **APK via Gradle+NDK** — `android/gradlew assembleDebug` com `externalNativeBuild`
+   (CMake orquestrado em `android/app/CMakeLists.txt`).
 
-#### Low Input Lag
-This project has been optimized to have as little input lag as possible, making the game feel more responsive than ever!
+Detalhes completos: [DESIGN.md](DESIGN.md) · README original do upstream: [README-UPSTREAM.md](README-UPSTREAM.md)
+· build desktop: [BUILDING.md](BUILDING.md).
 
-#### Instant Load Times
-Saving and loading files, going from place to place, and pausing all happen in the blink of an eye thanks to the game running natively on modern hardware.
+### Repositório privado de inputs (setup único para quem compila)
 
-#### Linux and Steam Deck Support
-A Linux binary is available for playing on most up-to-date distros, including on the Steam Deck.
+O zip com a ROM de build **não fica neste repo público** (nem em releases dele):
+fica em um repositório **privado** que o CI acessa via PAT. Configure tudo com o
+script pronto (requer [gh CLI](https://cli.github.com/), `zip`/`unzip` e um PAT
+classic com escopo `repo` — de preferência um token novo, não compartilhado em chats):
 
-To play on Steam Deck, extract the Linux build onto your deck. Then, in desktop mode, right click the DK64Recompiled executable file and select "Add to Steam". From there, you can return to Gaming mode and configure the controls as needed. See the [Steam Deck gyro aim FAQ section](#how-do-i-set-up-gyro-aiming-on-steam-deck) for more detailed instructions.
+```bash
+GH_TOKEN=ghp_... ROM_ZIP=caminho/para/Donkey.Kong.64.zip \
+  ./scripts/setup-build-inputs-repo.sh --purge-public
+```
 
-## FAQ
+O script: valida o sha1 da ROM (NTSC-U 1.0), cria o repo privado
+`dk64-recomp-build-inputs`, publica o release `build-inputs` com o asset
+`Donkey.Kong.64.zip`, define o secret `PRIVATE_REPO_TOKEN` neste repo e
+( com `--purge-public` ) remove qualquer release/tag `build-inputs` antiga
+deste repo público. Se você rotacionar o PAT depois, basta rodar o script
+de novo (ou `gh secret set PRIVATE_REPO_TOKEN`) para o CI continuar funcionando.
 
-#### What is static recompilation?
-Static recompilation is the process of automatically [translating an application from one platform to another](https://www.youtube.com/watch?v=lMGu6Ng_3yA&t=55s). For more details, check out the full description of how this project's recompilation works here: [N64: Recompiled](https://github.com/Mr-Wiseguy/N64Recomp).
+### Local (sem CI)
 
-#### How is this related to the in-progress decompilation project?
-Unlike N64 ports in the past, this project is not based on the source code provided by a decompilation of the game. This is because static recompilation bypasses the need for decompiled source code when making a port, allowing ports to be made **without source code**. However, the reverse engineering work done by the decompilation team was invaluable for providing some of the enhancements featured in this project. For this reason, the project uses headers and some functions from the decompilation project in order to make modifications to the game. Many thanks to the decompilation team for all of the hard work they've done.
+```bash
+# 1) Codegen (host Linux com clang/lld/ninja + python3)
+git submodule update --init --recursive   # vcpkg não é necessário: update=none
+<baixe sua ROM e coloque em rom-work/baserom.us.z64>
+(cd rom-work && python3 ../lib/dk64_decomp/tools/generate_decompressed_rom.py)
+cp rom-work/baserom.us.decompressed.z64 donkeykong64.decompressed.us.z64
+# build N64Recomp/RSPRecomp (commit 2b6f0568...) e rode:
+./N64Recomp us.toml && ./RSPRecomp n_aspMain.toml
+make -C patches CC=clang LD=ld.lld && ./N64Recomp patches.toml
+cmake -S lib/rt64/src/tools/file_to_c -B build-filetoc -G Ninja && cmake --build build-filetoc
 
-#### Where is the savefile stored?
-- Windows: `%LOCALAPPDATA%\DK64Recompiled\saves`
-- Linux: `~/.config/DK64Recompiled/saves`
+# 2) APK
+git -C lib/rt64 apply ../../android/patches/rt64-android.patch
+git -C lib/rt64/src/contrib/plume apply ../../../../../android/patches/plume-android.patch
+git -C lib/RecompFrontend apply ../../android/patches/recompfrontend-android.patch
+cd android && ./gradlew assembleDebug -PHOST_FILE_TO_C="$PWD/../build-filetoc/file_to_c"
+```
 
-#### How do I choose a different ROM?
-**You don't.** This project is **only** a port of Donkey Kong 64 and it will only accept one specific ROM: the US version of the N64 release of Donkey Kong 64. ROMs in formats other than .z64 will be automatically converted, as long as it is the correct ROM. **It is not an emulator and it cannot run any arbitrary ROM.** 
+## Driver Vulkan (Turnip) — opcional
 
-If you want to play a modded ROM or in another language, note that support for modding and other languages will be added to the project itself in the future and will not rely on you supplying a different ROM. 
+Em alguns dispositivos o driver proprietário Adreno tem bugs de Vulkan (ex.:
+crash `SIGSEGV` em `vkGetRefreshCycleDurationGOOGLE` na thread `RT64 Present`,
+visto no moto g34 5G). O port integra o **libadrenotools** (como Vita3K,
+yuzu/sudachi e os ports de recompilados com RT64): você pode instalar um
+driver **Mesa Turnip** em .zip e o jogo passa a usá-lo no lugar do driver do
+sistema — **direto pelo menu do jogo**, na opção **“GPU Driver”** (embaixo de
+Exit, no launcher).
 
-## Known Issues
-* Intel GPUs on Linux may not currently work. If you have experience with Vulkan development on Linux, help here would be greatly appreciated!
-* The prebuilt Linux binary may not work correctly on some distributions of Linux. If you encounter such an issue, building the project locally yourself is recommended. A Flatpak or AppImage may be provided in the future to solve this issue. Adding the Linux version to Steam and setting "Steam Linux Runtime" as the compatibility tool or launching it via Gamescope may work around the issue. Alternatively, running the Windows version with Proton is known to work well and may also work around this issue.
-* Overlays such as MSI Afterburner and other software such as Wallpaper Engine can cause performance issues with this project that prevent the game from rendering correctly. Disabling such software is recommended.
+1. Baixe um driver Turnip — formatos aceitos: `.zip` **adrenotools** (ex.:
+   [K11MCH1/AdrenoToolsDrivers](https://github.com/K11MCH1/AdrenoToolsDrivers),
+   `Turnip_vX.Y.Z_R*.zip`, variantes `Gmem`/`Sysmem`), `.zip` **Winlator/**
+   **WN-Turnip** (sem `meta.json` — o app autodetecta o soname) ou `.so` solto.
+   **Atenção à geração da GPU**: os zips são por geração — Adreno 6xx
+   (ex.: Adreno 619 do moto g34 5G) usa os builds **a6xx**; builds a7xx/a8xx
+   não expõem GPU neste aparelho.
+2. No menu do jogo: **GPU Driver → Install driver (.zip)...** → escolha o zip
+   (ou `.so`) no seletor do Android. O app **testa** o driver na hora (cria uma
+   `VkInstance` e enumera as GPUs, o mesmo caminho do RT64): se listar a GPU
+   (“installed and verified: Adreno (TM) 619…”), está pronto; se não listar
+   nenhuma GPU Vulkan, a instalação é **recusada** com instruções — sem isso o
+   jogo falharia com “Unable to find compatible graphics device”.
+3. **Sair do app e abrir de novo** (o driver é carregado no início do RT64;
+   o menu Exit encerra o processo, então reabrir já aplica o novo driver).
+4. Para voltar ao driver do sistema: **GPU Driver → Use system driver**
+   (botão só aparece quando há driver custom ativo).
 
-## Building
-Building is not required to play this project, as prebuilt binaries (which do not contain game assets) can be found in the [Releases](https://github.com/Rainchus/Donkey-Kong-64-Recompiled/releases) section. Instructions on how to build this project can be found in the [BUILDING.md](BUILDING.md) file.
+Requer Adreno + arm64; Android 10+ recomendado. Detalhes da implementação
+(incl. diagnóstico do bug “Unable to find compatible graphics device” e o
+probe de validação): [docs/DRIVER-VULKAN.md](docs/DRIVER-VULKAN.md).
 
-## Libraries Used and Projects Referenced
-* [RT64](https://github.com/rt64/rt64) for the project's rendering engine
-* [RmlUi](https://github.com/mikke89/RmlUi) for building the menus and launcher
-* [lunasvg](https://github.com/sammycage/lunasvg) for SVG rendering, used by RmlUi
-* [FreeType](https://freetype.org/) for font rendering, used by RmlUi  
-* [moodycamel::ConcurrentQueue](https://github.com/cameron314/concurrentqueue) for semaphores and fast, lock-free MPMC queues
-* [Gamepad Motion Helpers](https://github.com/JibbSmart/GamepadMotionHelpers) for sensor fusion and calibration algorithms to implement gyro aiming
-* [Donkey Kong 64 Decompilation](https://gitlab.com/dk64_decomp/dk64) for headers and some function definitions, used for making patches or some enhancements
-* [Ares emulator](https://github.com/ares-emulator/ares) for RSP vector instruction reference implementations, used in RSP recompilation
+## Notas técnicas do port
 
-Special thanks to [thecozies](https://github.com/thecozies) for designing and helping implement the launcher and config menus!<br/>
-Also special thanks to [fewffwa](https://github.com/fewffwa) for testing multiple in development builds and bug reporting.
+- `libmain.so` (SDL2 estático + runtime + RT64) carregado via `SDLActivity`
+  (`System.loadLibrary("main")` → `SDL_main`)
+- Paths do app injetados por `getArguments()` (filesDir/externalFilesDir)
+- **Toda a interação de arquivos acontece na UI do próprio jogo**: a opção
+  “Load ROM” e o menu “GPU Driver” abrem o DocumentsUI do Android via ponte
+  JNI não-bloqueante (`android/native/compat/file_bridge.cpp`); o resultado é
+  despachado por frame no `draw_hook` (patch do `ui_state.cpp`), no mesmo
+  contexto dos callbacks de menu. A tela Java de setup foi removida — o app
+  abre direto no SDL e só copia assets na 1ª execução (`AppSetup`)
+- `nativefiledialog-extended` e `curl` substituídos por *stubs* no Android
+  (diálogo de ROM = SAF via DocumentsUI; mod store offline)
+- Patches aplicados aos submódulos `rt64`/`RecompFrontend` via `git apply`
+  (`android/patches/*.patch`) — submódulos permanecem upstream
+- Vulkan via volk (`VK_NO_PROTOTYPES`): driver do sistema ou Turnip
+  customizável via libadrenotools (ver [docs/DRIVER-VULKAN.md](docs/DRIVER-VULKAN.md))
+- Alinhamento 16KB pages; minSdk 26; arm64-v8a
+
+## Créditos e licença
+
+- Upstream: [Rainchus/Donkey-Kong-64-Recompiled](https://github.com/Rainchus/Donkey-Kong-64-Recompiled)
+  (veja [LICENSE](LICENSE)) — baseado em [N64: Recompiled](https://github.com/Mr-Wiseguy/N64Recomp)
+  de Mr-Wiseguy
+- RT64 (DinnerHone/rt64), N64ModernRuntime e RecompFrontend (Killklli), RmlUi,
+  SDL2, dk64_decomp team — detalhes no README original ([README-UPSTREAM.md](README-UPSTREAM.md))
+
+*Este port é um trabalho técnico de fã, sem qualquer afiliação com a Nintendo.*
+
+### Trocar a ROM depois
+
+O runtime guarda a ROM validada no config interno e a valida por hash a cada
+início. Para escolher outra ROM, limpe os dados do app (ou apenas o armazenamento
+interno) — o menu volta a oferecer **“Load ROM”** na próxima abertura.
