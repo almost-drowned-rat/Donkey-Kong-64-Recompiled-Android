@@ -247,25 +247,7 @@ int dk64::get_sfx_volume() {
 
 static void add_graphics_options(recomp::config::Config &config) {
     using EnumOptionVector = const std::vector<recomp::config::ConfigOptionEnumOption>;
-#ifdef __ANDROID__
-    // Shader Resolution (as in DinoTale): the size of the game's picture a RetroArch shader (menu Back opens) works on.
-    static EnumOptionVector shader_resolution_options = {
-        {0, "Original", "Original"},
-        {1, "2x", "2x"},
-        {2, "Full", "Full"}
-    };
-    config.add_enum_option(
-        "shader_resolution",
-        "Shader Resolution",
-        "The size of the game's picture a RetroArch shader works on. "
-        "<recomp-color primary>Original</recomp-color>: the N64's 240 lines, as in RetroArch - the look the shaders "
-        "were made for (scanlines, CRT masks, pixel upscalers) and by far the lightest. "
-        "<recomp-color primary>2x</recomp-color>: twice that. "
-        "<recomp-color primary>Full</recomp-color>: the window's size - heavy shaders get slow.",
-        shader_resolution_options,
-        0u
-    );
-#endif
+
     // Cutscene borders
     static EnumOptionVector cutscene_border_options = {
         {dk64::CutsceneBordersMode::Off, "Off", "Off"},
@@ -489,6 +471,32 @@ void dk64::init_config() {
 
     set_control_defaults();
     set_control_descriptions();
+#ifdef __ANDROID__
+    // Settings > Android Options (after Graphics): the shader resolution; main.cpp adds the buttons for the shader
+    // pages of the menu Back opens and the GPU driver.
+    {
+        auto &android_config = recompui::config::create_config_tab("Android Options", "android_options", false);
+        using EnumOptionVector = const std::vector<recomp::config::ConfigOptionEnumOption>;
+        static EnumOptionVector shader_resolution_options = {
+            {0, "Original", "Original"},
+            {1, "2x", "2x"},
+            {2, "Full", "Full"}
+        };
+        android_config.add_enum_option(
+            "shader_resolution",
+            "Shader Resolution",
+            "The size of the game's picture a RetroArch shader works on. "
+            "<recomp-color primary>Original</recomp-color>: the N64's 240 lines, as in RetroArch - the look the shaders "
+            "were made for (scanlines, CRT masks, pixel upscalers) and by far the lightest. "
+            "<recomp-color primary>2x</recomp-color>: twice that. "
+            "<recomp-color primary>Full</recomp-color>: the window's size - heavy shaders get slow.<br /><br />"
+            "<b>Shader...</b> imports shader packs (.zip) and picks a preset, <b>Shader parameters...</b> changes "
+            "the preset's settings, <b>GPU Driver (Turnip)...</b> installs a Vulkan driver (the app restarts).",
+            shader_resolution_options,
+            0u
+        );
+    }
+#endif
     recompui::config::create_controls_tab();
 
     auto &sound_config = recompui::config::create_sound_tab();

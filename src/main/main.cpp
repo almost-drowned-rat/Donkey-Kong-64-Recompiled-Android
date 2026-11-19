@@ -683,6 +683,7 @@ void reorder_texture_pack(recomp::mods::ModContext&) {
 #ifdef __ANDROID__
 // The shader pass (shaderpass/rt64): Shader Resolution from the graphics settings.
 namespace RT64 { void setShaderResolution(int mode); }
+void android_open_shader_menu(int which);   // virtual_pad.cpp
 #endif
 
 #ifdef __ANDROID__
@@ -997,10 +998,11 @@ int main(int argc, char** argv) {
     dk64::init_config();
 
 #ifdef __ANDROID__
-    // Settings > Graphics: the GPU driver (Turnip, adrenotools) under HUD Placement, the page's last option
-    // (android/patches/recompfrontend-option-buttons.patch).
-    recompui::config::add_option_button(recompui::config::graphics::options::hr_option, "GPU Driver (Turnip)...",
-                                        []() { show_android_gpu_driver_menu(); });
+    // Settings > Android Options: the shader pages of the menu Back opens and the GPU driver (Turnip, adrenotools),
+    // as buttons under Shader Resolution (android/patches/recompfrontend-option-buttons.patch).
+    recompui::config::add_option_button("shader_resolution", "Shader...", []() { android_open_shader_menu(0); });
+    recompui::config::add_option_button("shader_resolution", "Shader parameters...", []() { android_open_shader_menu(1); });
+    recompui::config::add_option_button("shader_resolution", "GPU Driver (Turnip)...", []() { show_android_gpu_driver_menu(); });
 #endif
     recompui::register_launcher_init_callback(on_launcher_init);
     recompui::register_launcher_update_callback(dk64::launcher_animation_update);
@@ -1039,7 +1041,7 @@ int main(int argc, char** argv) {
         recompinput::poll_inputs();
         androidport::virtualpad::update_game_state(ultramodern::is_game_started(), recompinput::game_input_disabled());
         // Settings > Graphics > Shader Resolution, to the shader pass (shaderpass/rt64)
-        const auto shader_resolution = recompui::config::get_graphics_config().get_option_value("shader_resolution");
+        const auto shader_resolution = recompui::config::get_config("android_options").get_option_value("shader_resolution");
         if (const uint32_t* value = std::get_if<uint32_t>(&shader_resolution)) {
             RT64::setShaderResolution(static_cast<int>(*value));
         }
