@@ -10,13 +10,16 @@ What this version adds (details in [CHANGELOG.md](CHANGELOG.md)):
 
 - Upstream Donkey Kong 64: Recompiled (game version 1.0.3) — branch `main` follows upstream, `android` is this port
 - App ID `io.github.almostdrownedrat.dk64` ("DK64 Recompiled") — installs next to other DK64 apps
-- **Touch buttons** (N64 layout: stick, A, B, Z, L, R, START, C buttons; D-pad hidden by default). The
-  **controller icon** at the top centre opens their settings: **Touch buttons Automatic / Always / Off**
+- **Touch buttons** (N64 layout: stick, A, B, Z, L, R, START, C buttons; D-pad hidden by default). Their
+  settings are under **Touch controls** in the menu (Back, or the **controller icon** at the top centre):
+  **Touch buttons Automatic / Always / Off**
   (Automatic hides them while a controller is used and a touch brings them back — on a handheld you normally
   never see them), move and resize, button size, show / hide single buttons, opacity, stick sensitivity, reset.
   Touches off the buttons still work as a mouse in the menus
-- Options menu on Android's **Back** (swipe from the edge to show the system bar and tap back, or the back
-  gesture), in game; Back closes it again
+- **Back** (swipe from the edge to show the system bar and tap back, or the back gesture) opens
+  the menu in game — the same in all of this fork's Android ports and fully usable with the controller (D-pad /
+  stick, **A** choose, **B** back): **Back to the game**, **Game settings and controller** (the game's own menu,
+  where the controller is set up) and **Touch controls**. With the game's menu open, Back closes it
 - Real full screen, no black strip from the navigation bar
 - Fixed audio crackling and pitch jumps
 - Fixed a frozen picture after overlays and the missing restart after loading a ROM
