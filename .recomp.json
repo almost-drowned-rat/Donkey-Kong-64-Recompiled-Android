@@ -1,0 +1,37 @@
+{
+  "$schema": "https://recomp.fyi/schema/v1.json",
+  "game": "Donkey Kong 64",
+  "wikidata": "Q774773",
+  "system": "N64",
+  "type": "recomp",
+  "project": "Donkey Kong 64: Recompiled - Android",
+  "status": "released",
+  "targets": [
+    "Android"
+  ],
+  "original": {
+    "region": "USA",
+    "sha1": "cf806ff2603640a748fca5026ded28802f1f4a50"
+  },
+  "toolchain": [
+    "N64Recomp",
+    "RT64"
+  ],
+  "maintainers": [
+    {
+      "name": "almost-drowned-rat",
+      "link": "https://github.com/almost-drowned-rat"
+    }
+  ],
+  "links": [
+    {
+      "label": "Donkey Kong 64: Recompiled (main project)",
+      "url": "https://github.com/Rainchus/Donkey-Kong-64-Recompiled"
+    },
+    {
+      "label": "First Android port (deivid22srk)",
+      "url": "https://github.com/deivid22srk/dk64-recomp-android"
+    }
+  ],
+  "notes": "Android version of Donkey Kong 64: Recompiled, a fork of it (branch android). Made with AI assistance."
+}
