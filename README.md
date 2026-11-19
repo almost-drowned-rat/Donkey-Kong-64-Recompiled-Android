@@ -30,6 +30,9 @@ What this version adds (details in [CHANGELOG.md](CHANGELOG.md)):
   - Shader Resolution: the size of the picture the shader works on - Original (240 lines, as in RetroArch; the
     lightest and the look the shaders were made for), 2x or Full
   - GPU Driver: installs a Turnip driver package or goes back to the system driver (the app restarts)
+  - **Turnip is recommended on Adreno (Snapdragon):** it draws the frame without tiles here, which keeps the water,
+    fire and close geometry right. With the system driver, water can vanish in rectangles and triangles can flicker
+    or blow up (RT64 reads the depth buffer it draws to; Adreno's tiles see stale values) - a fix for it is open
 - Settings: **More** holds Technical, Manage Mods and Find Mods; no window mode options (always full screen); the
   right stick scrolls the menus
 - Progress dialog (Orta Recompiled's setup look) while a ROM, mods or a driver are copied, a shader pack is

@@ -425,6 +425,11 @@ void ensure_loaded_locked() {
     // usa kgsl (/dev/kgsl-3d0) e não precisa do redirect de fopen; o hook
     // extra (libfile_redirect_hook.so) no namespace do driver era um modo
     // de falha sem benefício.
+    // Turnip draws the whole frame at once (sysmem) instead of in GMEM tiles: RT64 reads the depth buffer it
+    // draws to (decals - DK64's water - and more), and on Adreno's tiles those reads are stale: missing water,
+    // flicker, blown-up triangles, black areas (checked on the Odin 2 Portal, 2026-11-19).
+    setenv("TU_DEBUG", "sysmem", 1);
+    ALOGI("custom driver: TU_DEBUG=%s", getenv("TU_DEBUG"));
     void *handle = adrenotools_open_libvulkan(
         RTLD_NOW,
         ADRENOTOOLS_DRIVER_CUSTOM,
