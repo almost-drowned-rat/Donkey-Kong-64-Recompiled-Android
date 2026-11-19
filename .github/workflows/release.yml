@@ -134,6 +134,7 @@ jobs:
           git -C lib/rt64/src/contrib/zstd apply --verbose ../../../../../android/patches/zstd-android.patch
           git -C lib/RecompFrontend apply --verbose ../../android/patches/recompfrontend-android.patch
           git -C lib/RecompFrontend apply --verbose ../../android/patches/recompfrontend-stick-scroll.patch
+          git -C lib/RecompFrontend apply --verbose ../../android/patches/recompfrontend-no-window-mode.patch
 
       - name: Verificar secret da keystore de release
         run: |

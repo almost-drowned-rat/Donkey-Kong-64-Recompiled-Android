@@ -23,6 +23,7 @@ android/                   Gradle project
     plume-android.patch
     recompfrontend-android.patch
     recompfrontend-stick-scroll.patch  the right stick scrolls the menus
+    recompfrontend-no-window-mode.patch  no Window Mode option (always full screen)
   app/src/main/            AndroidManifest.xml, MainActivity.java, res/, java org.libsdl.app (vendored SDL2 2.30.8)
 .github/workflows/build.yml  full build (host codegen + Gradle debug APK)
 ```
