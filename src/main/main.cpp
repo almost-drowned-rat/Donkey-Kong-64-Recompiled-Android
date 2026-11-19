@@ -798,17 +798,7 @@ void on_launcher_init(recompui::LauncherMenu *menu) {
         recompui::GameOptionsMenuLayout::Center
     );
 
-    // The default options, with GPU Driver (Android: the Turnip Vulkan driver) on the line before Exit.
-    game_options_menu->add_start_game_or_load_rom_option();
-    game_options_menu->add_setup_controls_option();
-    game_options_menu->add_settings_option();
-    game_options_menu->add_mods_option();
-#ifdef __ANDROID__
-    game_options_menu->add_option("GPU Driver", []() {
-        show_android_gpu_driver_menu();
-    });
-#endif
-    game_options_menu->add_exit_option();
+    game_options_menu->add_default_options();
     game_options_menu->set_width(30, recompui::Unit::Percent);
 
     for (auto option : game_options_menu->get_options()) {
@@ -1001,6 +991,12 @@ int main(int argc, char** argv) {
 
     dk64::init_config();
 
+#ifdef __ANDROID__
+    // Settings > Graphics: the GPU driver (Turnip, adrenotools) under HUD Placement, the page's last option
+    // (android/patches/recompfrontend-option-buttons.patch).
+    recompui::config::add_option_button(recompui::config::graphics::options::hr_option, "GPU Driver (Turnip)...",
+                                        []() { show_android_gpu_driver_menu(); });
+#endif
     recompui::register_launcher_init_callback(on_launcher_init);
     recompui::register_launcher_update_callback(dk64::launcher_animation_update);
 

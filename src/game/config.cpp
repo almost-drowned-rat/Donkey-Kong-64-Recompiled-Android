@@ -1,3 +1,11 @@
+#ifdef __ANDROID__
+#include <array>
+#include <memory>
+#include "config/ui_config_page_options_menu.h"
+#include "composites/ui_mod_menu.h"
+#include "composites/ui_mod_discovery.h"
+#include "elements/ui_button.h"
+#endif
 #include "donk_config.h"
 #include "recompui/recompui.h"
 #include "recompui/config.h"
@@ -351,6 +359,97 @@ static void set_control_descriptions() {
     recompinput::set_game_input_description(recompinput::GameInput::DPAD_RIGHT, "Used to move in Jetpac and Donkey Kong arcade games. Mods may also use it separately for additional features.");
 }
 
+#ifdef __ANDROID__
+// Android: Settings > More - Technical, Manage Mods and Find Mods in one tab (their own tabs are hidden). The tab
+// lists the three; choosing one opens it as a sub-page with a Back button to the list. The pages are the ones of
+// the hidden tabs, made once when the tab opens and shown one at a time.
+static void create_more_tab() {
+    using namespace recompui;
+    const bool discovery = !get_discovery_url().empty() && !ultramodern::is_game_started();
+    config::set_tab_visible("technical", false);
+    config::set_tab_visible(config::mods::id, false);
+    if (discovery) {
+        config::set_tab_visible(config::mod_discovery::id, false);
+    }
+    config::create_tab("More", "more",
+        [discovery](ContextId context, Element* parent) {
+            struct Pages {
+                Element* list = nullptr;
+                std::array<Element*, 3> page{};
+            };
+            auto pages = std::make_shared<Pages>();
+            auto box = [&](Element* where) {
+                Element* e = context.create_element<Element>(where);
+                e->set_width(100, Unit::Percent);
+                e->set_height(100, Unit::Percent);
+                e->set_display(Display::Flex);
+                e->set_flex_direction(FlexDirection::Column);
+                return e;
+            };
+            auto show = [pages](int which) {   // -1: the list
+                pages->list->set_display(which < 0 ? Display::Flex : Display::None);
+                for (int i = 0; i < 3; i++) {
+                    if (pages->page[i] != nullptr) {
+                        pages->page[i]->set_display(i == which ? Display::Flex : Display::None);
+                    }
+                }
+            };
+            pages->list = box(parent);
+            pages->list->set_padding(32.0f);
+            pages->list->set_gap(16.0f);
+            const char* names[3] = { "Technical", "Manage Mods", "Find Mods" };
+            for (int i = 0; i < 3; i++) {
+                if (i == 2 && !discovery) {
+                    continue;
+                }
+                Button* open = context.create_element<Button>(pages->list, names[i], ButtonStyle::Secondary, ButtonSize::Medium);
+                open->set_width(480.0f);
+                open->add_pressed_callback([show, i]() { show(i); });
+
+                Element* page = box(parent);
+                Button* back = context.create_element<Button>(page, std::string("\u2039  Back"), ButtonStyle::Tertiary, ButtonSize::Small);
+                back->set_width(160.0f);
+                back->set_margin_bottom(8.0f);
+                back->add_pressed_callback([show]() { show(-1); });
+                Element* body = context.create_element<Element>(page);
+                body->set_flex_grow(1.0f);
+                body->set_width(100, Unit::Percent);
+                if (i == 0) {
+                    context.create_element<ConfigPageOptionsMenu>(body, &config::get_config("technical"), true);
+                } else if (i == 1) {
+                    context.create_element<ModMenu>(body);
+                } else {
+                    context.create_element<ModDownloadsPanel>(body);
+                }
+                page->set_display(Display::None);
+                pages->page[i] = page;
+            }
+        },
+        // Can close: unapplied Technical options ask first (as their own tab did)
+        [](TabCloseContext close_context) {
+            recomp::config::Config& technical = config::get_config("technical");
+            if (technical.requires_confirmation && technical.is_dirty()) {
+                open_choice_prompt(
+                    "Technical options have unapplied changes.", "Would you like to apply or discard the changes?",
+                    "Apply", "Discard",
+                    [close_context]() {
+                        config::get_config("technical").save_config();
+                        if (close_context == TabCloseContext::ModalClose) config::close();
+                    },
+                    [close_context]() {
+                        config::get_config("technical").revert_temp_config();
+                        if (close_context == TabCloseContext::ModalClose) config::close();
+                    },
+                    ButtonStyle::Success, ButtonStyle::Danger, true);
+                return false;
+            }
+            return true;
+        },
+        [](TabCloseContext) {}
+    );
+}
+#endif
+
 void dk64::init_config() {
     std::filesystem::path recomp_dir = recompui::file::get_app_folder_path();
 
@@ -380,6 +479,9 @@ void dk64::init_config() {
     add_technical_options(technical_config);
 
     recompui::config::create_mods_tab();
+#ifdef __ANDROID__
+    create_more_tab();
+#endif
 
     recompui::config::finalize();
 
