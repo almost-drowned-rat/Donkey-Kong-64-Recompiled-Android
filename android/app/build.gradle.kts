@@ -15,8 +15,8 @@ android {
         applicationId = "io.github.almostdrownedrat.dk64"
         minSdk = 26
         targetSdk = 34
-        versionCode = 8
-        versionName = "0.2.0"
+        versionCode = 9
+        versionName = "0.2.1"
 
         ndk {
             // 64-bit apenas (decisão do usuário: memória e tempo de build)
