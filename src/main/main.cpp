@@ -798,13 +798,17 @@ void on_launcher_init(recompui::LauncherMenu *menu) {
         recompui::GameOptionsMenuLayout::Center
     );
 
-    game_options_menu->add_default_options();
+    // The default options, with GPU Driver (Android: the Turnip Vulkan driver) on the line before Exit.
+    game_options_menu->add_start_game_or_load_rom_option();
+    game_options_menu->add_setup_controls_option();
+    game_options_menu->add_settings_option();
+    game_options_menu->add_mods_option();
 #ifdef __ANDROID__
-    // Port Android: seleção do driver Vulkan (Turnip) direto no menu do jogo.
     game_options_menu->add_option("GPU Driver", []() {
         show_android_gpu_driver_menu();
     });
 #endif
+    game_options_menu->add_exit_option();
     game_options_menu->set_width(30, recompui::Unit::Percent);
 
     for (auto option : game_options_menu->get_options()) {
