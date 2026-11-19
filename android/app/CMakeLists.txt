@@ -258,10 +258,15 @@ add_subdirectory("${REPO_ROOT}/lib/adrenotools" "${CMAKE_BINARY_DIR}/adrenotools
 # 5-bis) Dependências do recomp (mesma ordem do CMake raiz upstream)
 # ----------------------------------------------------------------------------
 add_subdirectory("${RT64_DIR}" "${CMAKE_BINARY_DIR}/rt64")
+# RetroArch shader presets (shaderpass/rt64, as in DinoTale; android/patches/rt64-shaders.patch): librashader is
+# loaded at run time (liblibrashader_capi.so in the APK, copied into src/main/jniLibs by the local build).
+target_sources(rt64 PRIVATE "${REPO_ROOT}/shaderpass/rt64/rt64_shader_pass.cpp")
+target_include_directories(rt64 PUBLIC "${REPO_ROOT}/shaderpass/rt64" "${REPO_ROOT}/thirdparty/librashader/include")
 add_subdirectory("${NMR_DIR}" "${CMAKE_BINARY_DIR}/N64ModernRuntime")
 set(RECOMP_FRONTEND_N64MODERNRUNTIME_PATH "${NMR_DIR}")
 set(RECOMP_FRONTEND_RT64_PATH "${RT64_DIR}")
 add_subdirectory("${FRONTEND_DIR}" "${CMAKE_BINARY_DIR}/RecompFrontend")
+target_include_directories(recompui PRIVATE "${REPO_ROOT}/shaderpass/rt64")
 
 # Injeção de includes SDL2 nos alvos dos submódulos (branches Linux não disparam em Android).
 # plume: injetado explicitamente porque o próprio CMake dele decide os includes do SDL

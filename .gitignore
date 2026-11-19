@@ -90,3 +90,6 @@ android/local.properties
 android/.idea/
 *.apk
 *.aab
+
+# librashader, copied in by the local build
+android/app/src/main/jniLibs/

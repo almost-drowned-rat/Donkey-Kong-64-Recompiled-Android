@@ -247,6 +247,25 @@ int dk64::get_sfx_volume() {
 
 static void add_graphics_options(recomp::config::Config &config) {
     using EnumOptionVector = const std::vector<recomp::config::ConfigOptionEnumOption>;
+#ifdef __ANDROID__
+    // Shader Resolution (as in DinoTale): the size of the game's picture a RetroArch shader (menu Back opens) works on.
+    static EnumOptionVector shader_resolution_options = {
+        {0, "Original", "Original"},
+        {1, "2x", "2x"},
+        {2, "Full", "Full"}
+    };
+    config.add_enum_option(
+        "shader_resolution",
+        "Shader Resolution",
+        "The size of the game's picture a RetroArch shader works on. "
+        "<recomp-color primary>Original</recomp-color>: the N64's 240 lines, as in RetroArch - the look the shaders "
+        "were made for (scanlines, CRT masks, pixel upscalers) and by far the lightest. "
+        "<recomp-color primary>2x</recomp-color>: twice that. "
+        "<recomp-color primary>Full</recomp-color>: the window's size - heavy shaders get slow.",
+        shader_resolution_options,
+        0u
+    );
+#endif
     // Cutscene borders
     static EnumOptionVector cutscene_border_options = {
         {dk64::CutsceneBordersMode::Off, "Off", "Off"},

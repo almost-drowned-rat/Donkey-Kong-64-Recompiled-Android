@@ -11,6 +11,11 @@ final class TouchNative {
     static native boolean nativeGameRunning();
     /** fps, average and longest frame time (ms) of the last half second (counted per frame drawn). */
     static native float[] nativeFrameStats();
+    /** RetroArch shaders (shaderpass/rt64): the preset (.slangp, "" for none), compiling, its parameters. */
+    static native void nativeShaderSetPath(String path);
+    static native boolean nativeShaderCompiling();
+    static native String nativeShaderParams();
+    static native void nativeShaderSetParam(String name, float value);
     /** One of the game's menus takes input (options menu, launcher dialogs). */
     static native boolean nativeMenuOpen();
 }

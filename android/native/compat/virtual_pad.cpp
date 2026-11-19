@@ -5,6 +5,9 @@
  */
 #include "virtual_pad.h"
 
+#include <filesystem>
+#include <string>
+
 #include <atomic>
 #include <cmath>
 #include <jni.h>
@@ -101,4 +104,34 @@ VP_JNI jfloatArray JNICALL Java_com_deivid22srk_dk64recomp_TouchNative_nativeFra
     jfloatArray a = env->NewFloatArray(3);
     env->SetFloatArrayRegion(a, 0, 3, s);
     return a;
+}
+
+// RetroArch shaders for the menu Back opens (ShaderLibrary.java; shaderpass/rt64, as in DinoTale).
+namespace RT64 {
+    void setShaderPreset(const std::filesystem::path &presetPath);
+    bool shaderCompiling();
+    std::string getShaderParams();
+    void setShaderParam(const std::string &name, float value);
+}
+
+VP_JNI void JNICALL Java_com_deivid22srk_dk64recomp_TouchNative_nativeShaderSetPath(JNIEnv* env, jclass, jstring path) {
+    const char* p = path != nullptr ? env->GetStringUTFChars(path, nullptr) : nullptr;
+    RT64::setShaderPreset(p != nullptr ? std::filesystem::path(p) : std::filesystem::path());
+    if (p != nullptr) {
+        env->ReleaseStringUTFChars(path, p);
+    }
+}
+
+VP_JNI jboolean JNICALL Java_com_deivid22srk_dk64recomp_TouchNative_nativeShaderCompiling(JNIEnv*, jclass) {
+    return RT64::shaderCompiling() ? JNI_TRUE : JNI_FALSE;
+}
+
+VP_JNI jstring JNICALL Java_com_deivid22srk_dk64recomp_TouchNative_nativeShaderParams(JNIEnv* env, jclass) {
+    return env->NewStringUTF(RT64::getShaderParams().c_str());
+}
+
+VP_JNI void JNICALL Java_com_deivid22srk_dk64recomp_TouchNative_nativeShaderSetParam(JNIEnv* env, jclass, jstring name, jfloat value) {
+    const char* n = env->GetStringUTFChars(name, nullptr);
+    RT64::setShaderParam(n, value);
+    env->ReleaseStringUTFChars(name, n);
 }

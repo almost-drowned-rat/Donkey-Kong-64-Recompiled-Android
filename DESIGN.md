@@ -26,6 +26,7 @@ android/                   Gradle project
     recompfrontend-no-window-mode.patch  no Window Mode option (always full screen)
     recompfrontend-frame-stats.patch  FPS / frame time for the Back menu
     recompfrontend-option-buttons.patch  a button under an option (Settings > Graphics > GPU Driver)
+    rt64-shaders.patch  RetroArch shaders through shaderpass/rt64 (DinoTale), Shader Resolution
   app/src/main/            AndroidManifest.xml, MainActivity.java, res/, java org.libsdl.app (vendored SDL2 2.30.8)
 .github/workflows/build.yml  full build (host codegen + Gradle debug APK)
 ```

@@ -19,7 +19,20 @@ What this version adds (details in [CHANGELOG.md](CHANGELOG.md)):
 - **Back** (swipe from the edge to show the system bar and tap back, or the back gesture) opens
   the menu in game — the same in all of this fork's Android ports and fully usable with the controller (D-pad /
   stick, **A** choose, **B** back): **Back to the game**, **Game settings and controller** (the game's own menu,
-  where the controller is set up) and **Touch controls**. With the game's menu open, Back closes it
+  where the controller is set up), **Shader** / **Shader parameters**, **FPS / frame time**, **Touch controls** and
+  **Exit game**. With the game's menu open, Back closes it (also a handheld's own Back key). B goes back a level
+- **RetroArch shaders** (librashader, as in DinoTale): none are shipped - Shader > Import shader pack (.zip) takes
+  a slang shader pack such as [libretro/slang-shaders](https://github.com/libretro/slang-shaders)' "Download ZIP",
+  unpacks it into `Android/data/io.github.almostdrownedrat.dk64/files/shaders` and lists its folders and presets;
+  Shader parameters change the active preset's settings (kept per preset). Settings > Graphics >
+  **Shader Resolution**: the size of the picture the shader works on - Original (240 lines, as in RetroArch; the
+  lightest and the look the shaders were made for), 2x or Full
+- **GPU driver** (Turnip): Settings > Graphics > GPU Driver (Turnip)... installs a driver package or goes back to
+  the system driver (the app restarts)
+- Settings: **More** holds Technical, Manage Mods and Find Mods; no window mode options (always full screen); the
+  right stick scrolls the menus
+- Progress dialog (Orta Recompiled's setup look) while a ROM, mods or a driver are copied, a shader pack is
+  unpacked or a shader is compiled
 - Real full screen, no black strip from the navigation bar
 - Fixed audio crackling and pitch jumps
 - Fixed a frozen picture after overlays and the missing restart after loading a ROM

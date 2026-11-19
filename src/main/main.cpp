@@ -681,6 +681,11 @@ void reorder_texture_pack(recomp::mods::ModContext&) {
 }
 
 #ifdef __ANDROID__
+// The shader pass (shaderpass/rt64): Shader Resolution from the graphics settings.
+namespace RT64 { void setShaderResolution(int mode); }
+#endif
+
+#ifdef __ANDROID__
 /*
  * Menu "GPU Driver" do launcher (Android) — substitui a tela Java de setup
  * removida: o usuário instala/remove o driver Turnip direto pela UI do jogo.
@@ -1033,6 +1038,11 @@ int main(int argc, char** argv) {
     input_callbacks.poll_input = []() {
         recompinput::poll_inputs();
         androidport::virtualpad::update_game_state(ultramodern::is_game_started(), recompinput::game_input_disabled());
+        // Settings > Graphics > Shader Resolution, to the shader pass (shaderpass/rt64)
+        const auto shader_resolution = recompui::config::get_graphics_config().get_option_value("shader_resolution");
+        if (const uint32_t* value = std::get_if<uint32_t>(&shader_resolution)) {
+            RT64::setShaderResolution(static_cast<int>(*value));
+        }
     };
     input_callbacks.get_input = [](int controller_num, uint16_t* buttons, float* x, float* y) {
         bool ret = recompinput::profiles::get_n64_input(controller_num, buttons, x, y);
