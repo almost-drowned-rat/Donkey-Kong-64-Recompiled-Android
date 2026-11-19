@@ -91,3 +91,14 @@ VP_JNI jboolean JNICALL Java_com_deivid22srk_dk64recomp_TouchNative_nativeGameRu
 VP_JNI jboolean JNICALL Java_com_deivid22srk_dk64recomp_TouchNative_nativeMenuOpen(JNIEnv*, jclass) {
     return g_menu.load(std::memory_order_relaxed) ? JNI_TRUE : JNI_FALSE;
 }
+
+// FPS / frame time for the menu Back opens (counted in RecompFrontend's draw_hook, android/patches/recompfrontend-frame-stats.patch).
+extern "C" void recompui_frame_stats(float out[3]);
+
+VP_JNI jfloatArray JNICALL Java_com_deivid22srk_dk64recomp_TouchNative_nativeFrameStats(JNIEnv* env, jclass) {
+    float s[3];
+    recompui_frame_stats(s);
+    jfloatArray a = env->NewFloatArray(3);
+    env->SetFloatArrayRegion(a, 0, 3, s);
+    return a;
+}
