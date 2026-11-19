@@ -289,6 +289,12 @@ public class MainActivity extends SDLActivity {
 
         final Uri uri = uris.size() == 1 ? uris.get(0) : null;
         final Context appContext = getApplicationContext();
+        // the progress dialog in Orta's setup look (Progress95) while the file is copied / installed
+        if (touch != null && !uris.isEmpty()) {
+            touch.showProgress("DK64 Recompiled", kind == KIND_ROM ? "Copying and checking your ROM..."
+                    : kind == KIND_MOD ? "Copying " + uris.size() + (uris.size() == 1 ? " mod..." : " mods...")
+                    : "Installing the GPU driver...", -1f);
+        }
         new Thread(() -> {
             boolean ok = false;
             String payload;
@@ -331,6 +337,7 @@ public class MainActivity extends SDLActivity {
 
             final boolean fOk = ok;
             final String fPayload = payload;
+            runOnUiThread(() -> { if (touch != null) touch.hideProgress(); });
             try {
                 nativeOnFilePicked(kind, fOk, fPayload);
             } catch (UnsatisfiedLinkError e) {
