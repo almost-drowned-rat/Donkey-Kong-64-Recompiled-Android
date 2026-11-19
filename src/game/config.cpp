@@ -493,7 +493,8 @@ void dk64::init_config() {
             "<b>Shader...</b> imports shader packs (.zip) and picks a preset, <b>Shader parameters...</b> changes "
             "the preset's settings, <b>GPU Driver (Turnip)...</b> installs a Vulkan driver (the app restarts).",
             shader_resolution_options,
-            0u
+            0u,
+            true   // shown as a button (src/main/main.cpp)
         );
     }
 #endif
