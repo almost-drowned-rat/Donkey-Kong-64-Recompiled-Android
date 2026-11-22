@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/icon_256.png" alt="Donkey Kong 64: Recompiled for Android" width="160">
+</p>
+
 # Donkey Kong 64: Recompiled — Android
 
 The Android version of [Donkey Kong 64: Recompiled](https://github.com/Rainchus/Donkey-Kong-64-Recompiled): the
