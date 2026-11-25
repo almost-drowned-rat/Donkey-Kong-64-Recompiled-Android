@@ -205,6 +205,8 @@ add_library(curl_stub STATIC
     "${ANDROID_PORT_DIR}/native/stubs/curl_stub.cpp")
 target_include_directories(curl_stub PUBLIC
     "${ANDROID_PORT_DIR}/native/stubs/include")
+# the shim calls Java (HttpFetch) through SDL's JNI env: SDL's headers
+target_link_libraries(curl_stub PRIVATE SDL2-static)
 
 # Fake CURLConfig para find_package(CURL REQUIRED) do recompui
 set(CURL_FAKE_CONFIG_DIR "${CMAKE_BINARY_DIR}/fakecurl")

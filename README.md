@@ -59,7 +59,9 @@ The sections:
 - **Shaders**, **Audio**
 - **Controls** — Button mapping, deadzone, rumble; gyro and mouse; the touch buttons (mode, move and resize, size,
   single buttons, opacity, stick sensitivity, reset)
-- **Mods** — Manage mods and Find mods (before the game starts). In the game, **Install / switch mods (restart)**
+- **Mods** — Manage mods and Find mods (before the game starts): Find mods lists the mods of
+  [dk64recomp.com](https://dk64recomp.com/mods.html) with their pictures and installs them with one tap (the app
+  uses the internet only for this). In the game, **Install / switch mods (restart)**
   restarts the app to the start screen, where mods are installed and turned on or off.
 
 There are no window mode options (always full screen).
@@ -80,8 +82,6 @@ There are no window mode options (always full screen).
   flicker or blow up (RT64 reads the depth buffer it draws to, and Adreno's tiles see stale values); a fix for the
   system driver is still open.
 - With the system driver, Android's screen recording can make the GPU hang after a moment.
-- **Find mods** can't load its list yet ("Failed to initialize libcurl easy handle"); mods installed by hand
-  (Manage mods > Install Mods) work.
 
 Report problems on this repository's [Issues](../../issues) page, with the device, Android version and GPU driver.
 

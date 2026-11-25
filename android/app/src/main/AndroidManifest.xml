@@ -30,6 +30,8 @@
 
     <!-- Vibração (SDL haptics / rumble de gamepad). -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Settings > Mods > Find mods: the mod list and its downloads (HttpFetch.java) -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Bluetooth para HID (Steam Controller): opcional, requer BLUETOOTH_CONNECT
          no Android 12+; o SDL degrada graciosamente sem a permissão.

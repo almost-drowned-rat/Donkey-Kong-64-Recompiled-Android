@@ -1,3 +1,35 @@
+diff --git a/recompui/CMakeLists.txt b/recompui/CMakeLists.txt
+index a714ce5..eea6ee6 100644
+--- a/recompui/CMakeLists.txt
++++ b/recompui/CMakeLists.txt
+@@ -77,6 +77,13 @@ target_include_directories(recompui PUBLIC
+     ${CMAKE_CURRENT_SOURCE_DIR}/src/util
+     ${CMAKE_CURRENT_SOURCE_DIR}/lib/RmlUi/Include
+     ${CMAKE_CURRENT_SOURCE_DIR}/lib/RmlUi/Backends
++    ${RECOMP_FRONTEND_N64MODERNRUNTIME_PATH}/librecomp/include
++    ${RECOMP_FRONTEND_N64MODERNRUNTIME_PATH}/N64Recomp/include
++    ${RECOMP_FRONTEND_N64MODERNRUNTIME_PATH}/ultramodern/include
++    ${RECOMP_FRONTEND_N64MODERNRUNTIME_PATH}/thirdparty
++    ${RECOMP_FRONTEND_N64MODERNRUNTIME_PATH}/thirdparty/concurrentqueue
++    ${RECOMP_FRONTEND_N64MODERNRUNTIME_PATH}/thirdparty/miniz
++    ${RECOMP_FRONTEND_N64MODERNRUNTIME_PATH}/thirdparty/sse2neon
+     ${RECOMP_FRONTEND_RT64_PATH}/include
+     ${RECOMP_FRONTEND_RT64_PATH}/src/contrib
+     ${RECOMP_FRONTEND_RT64_PATH}/src/contrib/hlslpp/include
+@@ -86,13 +93,6 @@ target_include_directories(recompui PUBLIC
+     ${RECOMP_FRONTEND_RT64_PATH}/src/render
+     ${RECOMP_FRONTEND_RT64_PATH}/src/contrib/nativefiledialog-extended/src/include
+     ${RECOMP_FRONTEND_RT64_PATH}/src/contrib/plume
+-    ${RECOMP_FRONTEND_N64MODERNRUNTIME_PATH}/librecomp/include
+-    ${RECOMP_FRONTEND_N64MODERNRUNTIME_PATH}/N64Recomp/include
+-    ${RECOMP_FRONTEND_N64MODERNRUNTIME_PATH}/ultramodern/include
+-    ${RECOMP_FRONTEND_N64MODERNRUNTIME_PATH}/thirdparty
+-    ${RECOMP_FRONTEND_N64MODERNRUNTIME_PATH}/thirdparty/concurrentqueue
+-    ${RECOMP_FRONTEND_N64MODERNRUNTIME_PATH}/thirdparty/miniz
+-    ${RECOMP_FRONTEND_N64MODERNRUNTIME_PATH}/thirdparty/sse2neon
+     ${CMAKE_BINARY_DIR}/shaders
+ )
+ 
 diff --git a/recompui/include/recompui/config.h b/recompui/include/recompui/config.h
 index 76e5efe..4000300 100644
 --- a/recompui/include/recompui/config.h
@@ -146,6 +178,64 @@ index e2ab7a0..b4fb751 100644
          if (!all_input_is_disabled) {
              bool is_mouse_input = false;
              // Implement some additional behavior for specific events on top of what RmlUi normally does with them.
+diff --git a/recompui/src/composites/ui_mod_discovery_ui.cpp b/recompui/src/composites/ui_mod_discovery_ui.cpp
+index 8d442e6..9346310 100644
+--- a/recompui/src/composites/ui_mod_discovery_ui.cpp
++++ b/recompui/src/composites/ui_mod_discovery_ui.cpp
+@@ -280,6 +280,53 @@ namespace recompui
+             if (j.empty())
+                 throw std::runtime_error("JSON data is empty object");
+ 
++            // Thunderstore's package list (https://thunderstore.io/c/<community>/api/v1/package/): an array of
++            // packages, newest version first - taken as the same entries as a mods.json (Banjo: Recompiled's mods).
++            if (j.is_array())
++            {
++                const std::string game = supported_games.empty() ? "" : supported_games[0].mod_game_id;
++                auto lower = [](std::string s) {
++                    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
++                    return s;
++                };
++                for (const auto &pkg : j)
++                {
++                    if (!pkg.is_object() || pkg.value("is_deprecated", false) || !pkg.contains("versions") ||
++                        !pkg["versions"].is_array() || pkg["versions"].empty())
++                        continue;
++                    const auto &ver = pkg["versions"][0];
++                    DiscoveryMod mod;
++                    mod.name = pkg.value("name", std::string());
++                    std::replace(mod.name.begin(), mod.name.end(), '_', ' ');
++                    mod.id = lower(pkg.value("name", std::string()));
++                    mod.authors = pkg.value("owner", std::string());
++                    mod.short_description = ver.value("description", std::string());
++                    mod.description = mod.short_description;
++                    mod.file_url = ver.value("download_url", std::string());
++                    mod.thumbnail_url = ver.value("icon", std::string());
++                    mod.version = ver.value("version_number", std::string());
++                    mod.game_id = game;
++                    if (pkg.contains("categories") && pkg["categories"].is_array())
++                        for (const auto &c : pkg["categories"])
++                            if (c.is_string()) mod.tags.push_back(c.get<std::string>());
++                    // "Owner-Name-1.2.3" -> "name:1.2.3"
++                    if (ver.contains("dependencies") && ver["dependencies"].is_array())
++                        for (const auto &d : ver["dependencies"])
++                        {
++                            if (!d.is_string()) continue;
++                            const std::string dep = d.get<std::string>();
++                            const size_t a = dep.find('-'), b = dep.rfind('-');
++                            if (a == std::string::npos || b == a) continue;
++                            mod.dependencies.push_back(lower(dep.substr(a + 1, b - a - 1)) + ":" + dep.substr(b + 1));
++                        }
++                    if (!mod.name.empty() && !mod.file_url.empty())
++                        mods.push_back(mod);
++                }
++                if (mods.empty())
++                    throw std::runtime_error("No valid mods found in JSON");
++                return mods;
++            }
++
+             for (auto it = j.begin(); it != j.end(); ++it)
+             {
+                 DiscoveryMod mod;
 diff --git a/recompui/src/config/ui_config.cpp b/recompui/src/config/ui_config.cpp
 index aebdb70..a88b4d3 100644
 --- a/recompui/src/config/ui_config.cpp
@@ -1757,6 +1847,36 @@ index 2c5dc52..dc8f92f 100644
  }
  
  TabSet::TabSet(ResourceId rid, Element *parent) :
+diff --git a/recompui/src/renderer/ui_renderer.cpp b/recompui/src/renderer/ui_renderer.cpp
+index 556df18..35243fc 100644
+--- a/recompui/src/renderer/ui_renderer.cpp
++++ b/recompui/src/renderer/ui_renderer.cpp
+@@ -426,6 +426,16 @@ public:
+         flush_image_from_bytes_queue();
+ 
+         auto it = image_from_bytes_map.find(source);
++        // Images made from bytes (mod thumbnails) are registered under a bare name, but RmlUi may hand the name over
++        // joined to the document's base path (on Android the app's assets folder): match the file name too.
++        std::string key = source;
++        if (it == image_from_bytes_map.end()) {
++            const size_t slash = source.find_last_of("/\\");
++            if (slash != std::string::npos) {
++                key = source.substr(slash + 1);
++                it = image_from_bytes_map.find(key);
++            }
++        }
+         if (it == image_from_bytes_map.end()) {
+             // Assign a unique handle with a transparent placeholder texture.
+             // Record the source name so the texture can be replaced when real data arrives.
+@@ -434,7 +444,7 @@ public:
+             texture_dimensions.y = 1;
+             Rml::byte transparent_pixel[] = { 0, 0, 0, 0 };
+             create_texture(texture_handle, transparent_pixel, Rml::Vector2i{ 1, 1 });
+-            pending_texture_sources_[source] = texture_handle;
++            pending_texture_sources_[key] = texture_handle;
+             return true;
+         }
+         
 diff --git a/recompui/src/util/ui_utils.cpp b/recompui/src/util/ui_utils.cpp
 index ba41f6b..a685daf 100644
 --- a/recompui/src/util/ui_utils.cpp
