@@ -796,6 +796,73 @@ void show_android_gpu_driver_menu() {
         request_app_restart_after_delay(800);
     }
 }
+
+// Settings > Graphics (the card menu, src/game/config.cpp): the GPU driver - its name beside it, A opens the installer
+recompui::config::MenuCardEntry android_driver_card() {
+    recompui::config::MenuCardEntry e;
+    e.label = "GPU Driver (Turnip)";
+    e.description = "Installs or picks a Vulkan driver (Turnip). The app restarts to use it.";
+    // a sub-list of cards (B goes back), not the old dialog: install a .zip, or back to the system driver
+    e.sub_entries = []() {
+        static std::string last_error;
+        std::vector<recompui::config::MenuCardEntry> l;
+        const std::string status = dk64driver::status_text() + (last_error.empty() ? "" : "\n\n" + last_error);
+        recompui::config::MenuCardEntry install;
+        install.label = "Install driver (.zip)";
+        install.description = status;
+        install.run = []() {
+            androidport::filedialog::request(androidport::filedialog::Kind::DriverZip,
+                [](bool ok, const std::string &payload) {
+                    if (ok) {
+                        last_error.clear();
+                        request_app_restart_after_delay(800);   // the new driver is loaded at the next start
+                    } else {
+                        last_error = payload;
+                    }
+                });
+        };
+        l.push_back(install);
+        // the drivers installed before: pick one (the app restarts to load it)
+        const std::string current = dk64driver::selected_dir();
+        for (const auto &drv : dk64driver::installed_drivers()) {
+            recompui::config::MenuCardEntry pick;
+            pick.label = drv.name;
+            pick.description = status;
+            const bool in_use = drv.dir == current || drv.dir + "/" == current || drv.dir == current + "/";
+            if (in_use) {
+                pick.value = []() { return std::string("In use"); };
+            }
+            pick.run = [drv, in_use]() {
+                if (!in_use && dk64driver::select_installed(drv)) {
+                    request_app_restart_after_delay(800);
+                }
+            };
+            l.push_back(pick);
+        }
+        if (dk64_adrenotools_custom_driver_active() || !current.empty()) {
+            recompui::config::MenuCardEntry reset;
+            reset.label = "Use system driver";
+            reset.description = status;
+            reset.run = []() {
+                dk64driver::reset_selection();
+                request_app_restart_after_delay(800);
+            };
+            l.push_back(reset);
+        }
+        return l;
+    };
+    e.value = []() {
+        static std::string name;
+        static std::chrono::steady_clock::time_point asked;
+        const auto now = std::chrono::steady_clock::now();
+        if (name.empty() || now - asked > std::chrono::seconds(1)) {
+            name = dk64driver::active_name();
+            asked = now;
+        }
+        return name;
+    };
+    return e;
+}
 #endif
 
 void on_launcher_init(recompui::LauncherMenu *menu) {

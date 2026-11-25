@@ -1,3 +1,4 @@
+#include <algorithm>
 #ifdef __ANDROID__
 #include <array>
 #include <memory>
@@ -363,8 +364,8 @@ static void set_control_descriptions() {
 #ifdef __ANDROID__
 // Android: Settings > More - Technical, Manage Mods and Find Mods in one tab (their own tabs are hidden). The tab
 // lists the three; choosing one opens it as a sub-page with a Back button to the list. The pages are the ones of
-// the hidden tabs, made once when the tab opens and shown one at a time.
-static void create_more_tab() {
+// the hidden tabs, made once when the tab opens and shown one at a time. (Replaced by the card menu below.)
+[[maybe_unused]] static void create_more_tab() {
     using namespace recompui;
     const bool discovery = !get_discovery_url().empty() && !ultramodern::is_game_started();
     config::set_tab_visible("technical", false);
@@ -451,6 +452,110 @@ static void create_more_tab() {
 }
 #endif
 
+#ifdef __ANDROID__
+// the GPU driver card (src/main/main.cpp)
+recompui::config::MenuCardEntry android_driver_card();
+
+static void create_android_card_tabs() {
+    using namespace recompui::config;
+    namespace gk = dk64::configkeys::general;
+    set_java_menu_class("com.deivid22srk.dk64recomp.TouchControls");
+    set_menu_accent(249, 99, 24);   // the start screen's colour (the orange sky)
+    create_card_tab("General", "card_general", []() {
+        std::vector<MenuCardEntry> l;
+        l.push_back(header_card("Session"));
+        MenuCardEntry back;
+        back.label = "Back to game";
+        back.run = []() { recompui::config::close(); };
+        l.push_back(back);
+        for (auto &e : java_menu_cards("game")) l.push_back(e);                 // Exit game
+        l.push_back(header_card("Gameplay"));
+        l.push_back(option_card(general::id, gk::story_skip));
+        l.push_back(option_card(general::id, gk::lightning_flashes));
+        l.push_back(option_card("technical", dk64::configkeys::technical::multiplayer_enabled));
+        l.push_back(header_card("Input"));
+        l.push_back(option_card(general::id, general::options::background_input_mode));
+        return l;
+    });
+    create_card_tab("Camera", "card_camera", []() {
+        return std::vector<MenuCardEntry>{
+            header_card("Camera"),
+            option_card(general::id, gk::camera_type),
+            option_card(general::id, gk::analog_camera_sensitivity),
+            header_card("Invert"),
+            option_card(general::id, gk::third_person_camera_invert_mode),
+            option_card(general::id, gk::first_person_invert_mode),
+            option_card(general::id, gk::swimming_invert_mode),
+        };
+    });
+    create_card_tab("Graphics", "card_graphics", []() {
+        namespace go = graphics::options;
+        namespace dg = dk64::configkeys::graphics;
+        std::vector<MenuCardEntry> l;
+        std::vector<std::string> used;
+        auto add = [&](const std::string &id) {
+            l.push_back(option_card(graphics::id, id));
+            used.push_back(id);
+        };
+        l.push_back(header_card("Picture"));
+        add(go::res_option);
+        add(go::ar_option);
+        add(go::hr_option);
+        add(dg::cutscene_borders);
+        l.push_back(header_card("Quality"));
+        add(go::ds_option);
+        add(go::msaa_option);
+        add(dg::draw_distance);
+        // any other option of the graphics config (shown only where it isn't hidden)
+        auto schema = get_config(graphics::id).get_config_schema();
+        for (auto &o : schema.options) {
+            if (o.id != go::rr_option && o.id != go::rr_manual_value &&
+                std::find(used.begin(), used.end(), o.id) == used.end() && o.type != recomp::config::ConfigOptionType::String) {
+                add(o.id);
+            }
+        }
+        l.push_back(header_card("Frame rate"));
+        add(go::rr_option);
+        add(go::rr_manual_value);
+        for (auto &e : java_menu_cards("display")) l.push_back(e);              // FPS
+        l.push_back(header_card("Driver"));
+        l.push_back(android_driver_card());
+        return l;
+    }, graphics::id);
+    create_card_tab("Shaders", "card_shaders", []() {
+        std::vector<MenuCardEntry> l;
+        l.push_back(header_card("RetroArch shaders"));
+        for (auto &e : java_menu_cards("shader")) l.push_back(e);
+        l.push_back(header_card("Picture"));
+        MenuCardEntry res = option_card("android_options", "shader_resolution");
+        res.hidden = nullptr;                                                     // hidden as an option of its own tab
+        l.push_back(res);
+        return l;
+    });
+    create_card_tab("Audio", "card_sound", []() {
+        std::vector<MenuCardEntry> l;
+        l.push_back(header_card("Volume"));
+        for (auto &e : config_cards(sound::id)) l.push_back(e);
+        return l;
+    });
+    create_card_tab("Controls", "card_controls", []() {
+        std::vector<MenuCardEntry> l;
+        l.push_back(header_card("Controller"));
+        l.push_back(bindings_card());
+        l.push_back(option_card(general::id, general::options::joystick_deadzone));
+        l.push_back(option_card(general::id, general::options::rumble_strength));
+        l.push_back(header_card("Gyro and mouse"));
+        l.push_back(option_card(general::id, general::options::gyro_sensitivity));
+        l.push_back(option_card(general::id, gk::gyro_invert_mode));
+        l.push_back(option_card(general::id, general::options::mouse_sensitivity));
+        l.push_back(option_card(general::id, gk::mouse_invert_mode));
+        l.push_back(header_card("Touch controls"));
+        for (auto &e : java_menu_cards("touch")) l.push_back(e);
+        return l;
+    });
+}
+#endif
+
 void dk64::init_config() {
     std::filesystem::path recomp_dir = recompui::file::get_app_folder_path();
 
@@ -506,9 +611,29 @@ void dk64::init_config() {
     auto &technical_config = recompui::config::create_config_tab("Technical", "technical", true);
     add_technical_options(technical_config);
 
+#ifdef __ANDROID__
+    // The Android card menu (the same in all N64 ports): the configs stay as they are (saved settings keep their
+    // files), their own tabs are hidden and card tabs show their options by topic. More / Technical / Android
+    // Options are gone; the menu Back opened (Touch, Shaders, FPS, Exit) is in here too (TouchControls' bridge).
+    for (const std::string &id : { recompui::config::general::id, recompui::config::graphics::id, std::string("android_options"),
+                                   recompui::config::controls::id, recompui::config::sound::id, std::string("technical") }) {
+        recompui::config::set_tab_visible(id, false);
+    }
+    create_android_card_tabs();
+#endif
     recompui::config::create_mods_tab();
 #ifdef __ANDROID__
-    create_more_tab();
+    // Manage Mods + Find Mods: one card tab "Mods"
+    recompui::config::set_tab_visible(recompui::config::mods::id, false);
+    if (!recompui::get_discovery_url().empty() && !ultramodern::is_game_started()) {
+        recompui::config::set_tab_visible(recompui::config::mod_discovery::id, false);
+    }
+    recompui::config::create_card_tab("Mods", "card_mods", []() {
+        std::vector<recompui::config::MenuCardEntry> l;
+        l.push_back(recompui::config::header_card("Mods"));
+        for (auto &e : recompui::config::mods_cards()) l.push_back(e);
+        return l;
+    });
 #endif
 
     recompui::config::finalize();
